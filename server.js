@@ -45,10 +45,15 @@ async function callLocalTranscribe(languageCode, filePath, model) {
   formData.append('language', languageCode);
   formData.append('response_format', 'json');
 
-  const response = await fetch(`${LOCAL_TRANSCRIBE_BASE_URL}/v1/audio/transcriptions`, {
-    method: 'POST',
-    body: formData,
-  });
+  let response;
+  try {
+    response = await fetch(`${LOCAL_TRANSCRIBE_BASE_URL}/v1/audio/transcriptions`, {
+      method: 'POST',
+      body: formData,
+    });
+  } catch (err) {
+    throw new Error(`Local transcription network error for ${languageCode}: ${err.message}`);
+  }
 
   if (!response.ok) {
     const body = await response.text();
@@ -68,14 +73,7 @@ function buildUserPrompt(candidates) {
     .map((c, idx) => `${idx + 1}) lang: ${c.lang}, text: "${c.text}"`)
     .join('\n');
 
-  return (
-    'We have three candidate transcripts for the same audio.\n' +
-    candidateLines +
-    '\nFor each candidate, decide if it is "good" (linguistically coherent and meaningful) or "bad" (nonsense, wrong language, or unusable). ' +
-    'Using only the "good" candidates, reconstruct the best possible content of the original speech and produce final merged versions in Japanese (ja), English (en), and Chinese (zh). ' +
-    'Return JSON only with this schema:\n' +
-    '{\n  "evaluations": [\n    { "lang": "ja", "quality": "good" | "bad" },\n    { "lang": "en", "quality": "good" | "bad" },\n    { "lang": "zh", "quality": "good" | "bad" }\n  ],\n  "final": {\n    "ja": "<final merged Japanese>",\n    "en": "<final merged English>",\n    "zh": "<final merged Chinese>"\n  }\n}'
-  );
+  return `We have three candidate transcripts for the same audio.\n${candidateLines}\nFor each candidate, decide if it is "good" (linguistically coherent and meaningful) or "bad" (nonsense, wrong language, or unusable). Using only the "good" candidates, reconstruct the best possible content of the original speech and produce final merged versions in Japanese (ja), English (en), and Chinese (zh). Return JSON only with this schema:\n{\n  "evaluations": [\n    { "lang": "ja", "quality": "good" | "bad" },\n    { "lang": "en", "quality": "good" | "bad" },\n    { "lang": "zh", "quality": "good" | "bad" }\n  ],\n  "final": {\n    "ja": "<final merged Japanese>",\n    "en": "<final merged English>",\n    "zh": "<final merged Chinese>"\n  }\n}`;
 }
 
 app.post('/api/transcribe-and-merge', upload.single('audio'), async (req, res) => {
