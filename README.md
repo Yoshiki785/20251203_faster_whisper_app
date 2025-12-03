@@ -57,3 +57,58 @@ Example JSON response:
   ]
 }
 ```
+
+## Node.js merge backend
+
+An Express-based helper service is included to call the local faster-whisper server in Japanese, English, and Chinese, then merge high-quality transcripts via the OpenAI API.
+
+### Setup
+1. Install Node.js dependencies:
+   ```bash
+   npm install
+   ```
+2. Copy the environment example and set your OpenAI API key:
+   ```bash
+   cp .env.example .env
+   # edit .env to set OPENAI_API_KEY
+   ```
+3. Ensure the Python faster-whisper server is running at `LOCAL_TRANSCRIBE_BASE_URL` (default `http://localhost:8000`).
+
+### Running the server
+Start the Node.js service:
+```bash
+npm start
+```
+The server listens on `PORT` (default `3001`).
+
+### API usage
+Send audio to the merge endpoint:
+```bash
+curl -X POST http://localhost:3001/api/transcribe-and-merge \
+  -F "audio=@sample.wav" \
+  -F "model=medium"
+```
+
+### Response format
+The service returns the three candidate transcripts and the merged evaluation:
+```json
+{
+  "candidates": [
+    { "lang": "ja", "text": "...", "raw": { /* local server response */ } },
+    { "lang": "en", "text": "...", "raw": { /* local server response */ } },
+    { "lang": "zh", "text": "...", "raw": { /* local server response */ } }
+  ],
+  "evaluation": {
+    "evaluations": [
+      { "lang": "ja", "quality": "good" },
+      { "lang": "en", "quality": "good" },
+      { "lang": "zh", "quality": "bad" }
+    ],
+    "final": {
+      "ja": "<final merged Japanese>",
+      "en": "<final merged English>",
+      "zh": "<final merged Chinese>"
+    }
+  }
+}
+```
