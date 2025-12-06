@@ -27,8 +27,7 @@ app.add_middleware(
 DEFAULT_MODEL_NAME = "medium"
 model_cache: Dict[str, WhisperModel] = {}
 
-
-def _select_device() -> str:
+codex/create-fastapi-audio-transcription-server-dj1nyf
     """
     Use CUDA if available, otherwise fall back to CPU.
     Newer ctranslate2 versions use get_cuda_device_count().
@@ -40,6 +39,9 @@ def _select_device() -> str:
     except Exception:
         # 何かあれば素直に CPU にフォールバック
         return "cpu"
+=======
+    return "cuda" if ctranslate2.get_device_count("cuda") > 0 else "cpu"
+main
 
 
 def _compute_type_for_device(device: str) -> str:
