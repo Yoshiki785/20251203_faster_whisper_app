@@ -86,9 +86,11 @@ app.post('/api/transcribe-and-merge', upload.single('audio'), async (req, res) =
 
   try {
     const targetLanguages = ['ja', 'en', 'zh'];
-    const candidates = await Promise.all(
-      targetLanguages.map((lang) => callLocalTranscribe(lang, filePath, requestedModel))
-    );
+    const candidates = [];
+    for (const lang of targetLanguages) {
+      const candidate = await callLocalTranscribe(lang, filePath, requestedModel);
+      candidates.push(candidate);
+    }
 
     const systemMessage = {
       role: 'system',
