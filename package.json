@@ -1,0 +1,17 @@
+{
+  "name": "faster-whisper-merge-backend",
+  "version": "1.0.0",
+  "description": "Node.js backend to call local faster-whisper server in multiple languages and merge via OpenAI",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1",
+    "node-fetch": "^3.3.2",
+    "openai": "^4.56.0"
+  }
+}
